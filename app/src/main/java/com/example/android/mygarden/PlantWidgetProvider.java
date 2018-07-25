@@ -16,6 +16,7 @@ package com.example.android.mygarden;
 * limitations under the License.
 */
 
+import android.app.IntentService;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -37,17 +38,18 @@ public class PlantWidgetProvider extends AppWidgetProvider {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.plant_widget);
         // Widgets allow click handlers to only launch pending intents
         views.setOnClickPendingIntent(R.id.widget_plant_image, pendingIntent);
-        // TODO (4): Create a PendingIntent for the PlantWateringService and setOnClickPendingIntent for widget_water_button
+        // COMPLETED (4): Create a PendingIntent for the PlantWateringService and setOnClickPendingIntent for widget_water_button
+        Intent wateringIntent = new Intent(context, PlantWateringService.class);
+        PendingIntent wateringPendingIntent = PendingIntent.getService(context, 0, wateringIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        views.setOnClickPendingIntent(R.id.iv_widget_water_button, wateringPendingIntent);
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        // There may be multiple widgets active, so update all of them
-        for (int appWidgetId : appWidgetIds) {
-            updateAppWidget(context, appWidgetManager, appWidgetId);
-        }
+        // Start the intent service update widget action, the service takes care of updating the widgets UI
+        PlantWateringService.startActionUpdatePlantWidgets(context);
     }
 
     @Override
@@ -65,4 +67,10 @@ public class PlantWidgetProvider extends AppWidgetProvider {
         // Perform any action when the last AppWidget instance for this provider is deleted
     }
 
+    public static void updatePlantWidgets(Context context, AppWidgetManager appWidgetManager, int imgRes, int[] appWidgetIds) {
+        // There may be multiple widgets active, so update all of them
+        for (int appWidgetId : appWidgetIds) {
+            updateAppWidget(context, appWidgetManager, appWidgetId);
+        }
+    }
 }
